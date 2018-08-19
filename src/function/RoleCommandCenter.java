@@ -36,7 +36,8 @@ public class RoleCommandCenter {
 
             for (Role role : event.getMember().getRoles()) {
                 if (role.getName().matches(selection.getName())) {
-                    event.getChannel().sendMessage(event.getMember().getNickname()
+                    event.getChannel().sendMessage(event.getMember().getNickname().isEmpty() ?
+                    		event.getMember().getEffectiveName() : event.getMember().getNickname()
                             + ", you're already a " + selection.getName() + ".")
                             .queue();
                     return;
@@ -89,7 +90,8 @@ public class RoleCommandCenter {
                 ).queue();
                 GeneralEmbedManager.sendRemoveJobEmbed(selection, event);
             } else {
-                event.getTextChannel().sendMessage(event.getMember().getNickname()
+                event.getTextChannel().sendMessage(event.getMember().getNickname().isEmpty() ?
+                		event.getMember().getEffectiveName() : event.getMember().getNickname()
                         + ", it doesn't look like you're a " + selection.getName() + ".")
                         .queue();
             }
@@ -104,7 +106,9 @@ public class RoleCommandCenter {
     public static void getAllJobs(Member member, MessageChannel ch) {
         List<Role> roles = member.getRoles();
         if (roles.isEmpty()) {
-            ch.sendMessage(member.getNickname() + " doesn't seem to have a job...\n"
+            ch.sendMessage(member.getNickname() .isEmpty() ?
+            		member.getEffectiveName() : member.getNickname() 
+            		+ " doesn't seem to have a job...\n"
                     + "```Use " + Responder.getPrefix() + "addjob to get a job.```");
         } else {
             GeneralEmbedManager.sendJobsEmbed(member, ch);

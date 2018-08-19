@@ -4,7 +4,6 @@ import function.ResetMaintenanceTimer;
 import function.XIVServerStatus;
 import core.Configuration;
 import core.Main;
-import database.DBInteraction;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.entities.Guild;
 import scheduler.Event;
@@ -31,11 +30,9 @@ public class Clock {
     public void startClock() {
 
     	System.out.println("Initializing clock threads.");
-        executor.scheduleAtFixedRate(new EventTimeCheck(), 0, 10, TimeUnit.SECONDS);
-        executor.scheduleAtFixedRate(new ServerStatusCheck(), 0, 1, TimeUnit.MINUTES);
-        executor.scheduleAtFixedRate(new WeeklyResetCheck(), 0, 1, TimeUnit.MINUTES);
-        executor.scheduleWithFixedDelay(
-        		() -> SchedulerCommandCenter.populateEvents(), 0, 5, TimeUnit.MINUTES);
+        executor.scheduleAtFixedRate(new EventTimeCheck(), 0, 1, TimeUnit.SECONDS);
+        executor.scheduleAtFixedRate(new ServerStatusCheck(), 0, 1, TimeUnit.SECONDS);
+        executor.scheduleAtFixedRate(new WeeklyResetCheck(), 0, 1, TimeUnit.SECONDS);
     }
 
     /**
@@ -46,10 +43,15 @@ public class Clock {
         @Override
         public void run() {
             for (Event event : Event.events) {
-                SchedulerCommandCenter.checkToNotify(
-                        event,
-                        guild
-                );
+            	try {
+	            	System.out.println("Checking event " + event.getEventId());
+	                SchedulerCommandCenter.checkEvent(
+	                        event,
+	                        guild
+	                );
+            	} catch (Exception ex) {
+            		System.out.println(ex.getMessage());
+            	}
             }
         }
     }
@@ -61,11 +63,15 @@ public class Clock {
 
         @Override
         public void run() {
-            ResetMaintenanceTimer.notifyReset(
-                    ResetMaintenanceTimer.findNextReset(),
-                    Clock.jda.getTextChannelsByName(Configuration.getConfig().getCheck_channel(),
-                            true).get(0)
-            );
+        	try {
+	            ResetMaintenanceTimer.notifyReset(
+	                    ResetMaintenanceTimer.findNextReset(),
+	                    Clock.jda.getTextChannelsByName(Configuration.getConfig().getCheck_channel(),
+	                            true).get(0)
+	            );
+        	} catch (Exception ex) {
+        		System.out.println(ex.getMessage());
+        	}
         }
     }
 
@@ -75,10 +81,14 @@ public class Clock {
     private class ServerStatusCheck implements Runnable {
         @Override
         public void run() {
-            XIVServerStatus.query(
-            		Configuration.getConfig().getServer(),
-                    Clock.jda.getTextChannelsByName(Configuration.getConfig().getCheck_channel(), true).get(0)
-            );
+        	try {
+	            XIVServerStatus.query(
+	            		Configuration.getConfig().getServer(),
+	                    Clock.jda.getTextChannelsByName(Configuration.getConfig().getCheck_channel(), true).get(0)
+	            );
+        	} catch (Exception ex) {
+        		System.out.println(ex.getMessage());
+        	}
 
         }
     }

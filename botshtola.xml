@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="create_run_jar" name="Create Runnable Jar for Project Botshtola with Jar-in-Jar Loader">
+    <!--this file was created by Eclipse Runnable JAR file Export Wizard-->
+    <!--ANT 1.7 is required-->
+    <!--define folder properties-->
+    <property name="dir.buildfile" value="."/>
+    <property name="dir.workspace" value="${dir.buildfile}/.."/>
+    <property name="dir.jarfile" value="${dir.buildfile}"/>
+    <target name="create_run_jar">
+        <jar destfile="${dir.jarfile}/botshtola.jar">
+            <manifest>
+                <attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader"/>
+                <attribute name="Rsrc-Main-Class" value="core.Main"/>
+                <attribute name="Class-Path" value="."/>
+                <attribute name="Rsrc-Class-Path" value="./ JDA-3.7.1_385-withDependencies.jar json-20140107.jar derbyLocale_cs.jar derbyLocale_de_DE.jar derbyLocale_es.jar derbyLocale_fr.jar derbyLocale_hu.jar derbyLocale_it.jar derbyLocale_ja_JP.jar derbyLocale_ko_KR.jar derbyLocale_pl.jar derbyLocale_pt_BR.jar derbyLocale_ru.jar derbyLocale_zh_CN.jar derbyLocale_zh_TW.jar derby.jar derbyclient.jar"/>
+            </manifest>
+            <zipfileset src="jar-in-jar-loader.zip"/>
+            <fileset dir="${dir.jarfile}/bin"/>
+            <zipfileset dir="${dir.jarfile}/lib" includes="JDA-3.7.1_385-withDependencies.jar"/>
+            <zipfileset dir="${dir.jarfile}/lib" includes="json-20140107.jar"/>
+            <fileset dir="${dir.jarfile}/lib/db-derby-10.14.2.0-bin"/>
+            <zipfileset dir="${dir.jarfile}/lib/db-derby-10.14.2.0-bin/lib" includes="derbyLocale_cs.jar"/>
+            <zipfileset dir="${dir.jarfile}/lib/db-derby-10.14.2.0-bin/lib" includes="derbyLocale_de_DE.jar"/>
+            <zipfileset dir="${dir.jarfile}/lib/db-derby-10.14.2.0-bin/lib" includes="derbyLocale_es.jar"/>
+            <zipfileset dir="${dir.jarfile}/lib/db-derby-10.14.2.0-bin/lib" includes="derbyLocale_fr.jar"/>
+            <zipfileset dir="${dir.jarfile}/lib/db-derby-10.14.2.0-bin/lib" includes="derbyLocale_hu.jar"/>
+            <zipfileset dir="${dir.jarfile}/lib/db-derby-10.14.2.0-bin/lib" includes="derbyLocale_it.jar"/>
+            <zipfileset dir="${dir.jarfile}/lib/db-derby-10.14.2.0-bin/lib" includes="derbyLocale_ja_JP.jar"/>
+            <zipfileset dir="${dir.jarfile}/lib/db-derby-10.14.2.0-bin/lib" includes="derbyLocale_ko_KR.jar"/>
+            <zipfileset dir="${dir.jarfile}/lib/db-derby-10.14.2.0-bin/lib" includes="derbyLocale_pl.jar"/>
+            <zipfileset dir="${dir.jarfile}/lib/db-derby-10.14.2.0-bin/lib" includes="derbyLocale_pt_BR.jar"/>
+            <zipfileset dir="${dir.jarfile}/lib/db-derby-10.14.2.0-bin/lib" includes="derbyLocale_ru.jar"/>
+            <zipfileset dir="${dir.jarfile}/lib/db-derby-10.14.2.0-bin/lib" includes="derbyLocale_zh_CN.jar"/>
+            <zipfileset dir="${dir.jarfile}/lib/db-derby-10.14.2.0-bin/lib" includes="derbyLocale_zh_TW.jar"/>
+            <zipfileset dir="${dir.jarfile}/lib/db-derby-10.14.2.0-bin/lib" includes="derby.jar"/>
+            <zipfileset dir="${dir.jarfile}/lib/db-derby-10.14.2.0-bin/lib" includes="derbyclient.jar"/>
+        </jar>
+    </target>
+</project>

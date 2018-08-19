@@ -1,10 +1,7 @@
 package core;
 
-import java.sql.SQLException;
-
 import javax.security.auth.login.LoginException;
 
-import database.DBInitialization;
 import function.XIVServerStatus;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
@@ -41,31 +38,6 @@ public class Main {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-
-        /* Database access */
-        /*
-        try {
-            //DBInitialization.getConnection();
-        } catch (ClassNotFoundException | SQLException ex) {
-            ex.printStackTrace();
-        }
-        */
-
-        boolean configLoaded = false;
-/*
-        while (!configLoaded) {
-            if (jda != null) {
-                for (Guild guild : jda.getGuilds()) {
-                    Clock clock = new Clock(guild);
-                    System.out.println("Starting clock threads");
-                    clock.startClock();
-                }
-                configLoaded = true;
-            } else {
-                setJDA(Configuration.getConfig(), builder);
-            }
-        }
-            */
     }
 
     private static void setJDA(Configuration config, JDABuilder builder) throws LoginException, InterruptedException {
@@ -75,17 +47,21 @@ public class Main {
                 System.out.println("Token not found");
                 return;
             }
+            
+            SchedulerCommandCenter.populateEvents();
 
             jda = builder.setToken(Configuration.getConfig().getToken())
                     .addEventListener(new Responder())
                     .setGame(Game.of(Game.GameType.DEFAULT, XIVServerStatus.statusToString("Behemoth")))
                     .buildBlocking();
-            System.out.println("0");
             }
-        System.out.println(jda.getGuilds().size());
-        for (Guild guild : jda.getGuilds()) {
+        
+        buildThreads();
+    }
+    
+    public static void buildThreads() {
+    	for (Guild guild : jda.getGuilds()) {
             Clock clock = new Clock(guild);
-            System.out.println("Starting clock threads");
             clock.startClock();
         }
     }

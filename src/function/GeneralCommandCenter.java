@@ -69,7 +69,8 @@ public class GeneralCommandCenter {
     public static void roll(String parameter, MessageReceivedEvent event) {
         int range = parameter.matches("[0-9]{2,1000}") ? Integer.parseInt(parameter) : 100;
         int rnd = (int) (Math.random() * (range)) + 1;
-        event.getTextChannel().sendMessage(event.getMember().getNickname()
+        event.getTextChannel().sendMessage(event.getMember().getNickname().isEmpty() ?
+        		event.getMember().getEffectiveName() : event.getMember().getNickname()
                 + " rolled a ***" + rnd + "*** out of " + range + "!").queue();
     }
 }

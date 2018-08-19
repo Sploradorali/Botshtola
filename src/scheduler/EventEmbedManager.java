@@ -27,7 +27,7 @@ public class EventEmbedManager {
         e.getTextChannel().sendMessage(
                 new EmbedBuilder()
                         .setTitle("New event!")
-                        .setThumbnail("https://ffxiv.gamerescape.com/w/images/3/3c/061801.png")
+                        .setThumbnail("https://ffxiv.gamerescape.com/w/images/5/54/Main_Command_14_Icon.png")
                         .setDescription(e.getMember().getAsMention() + " created a new event.\n")
                         .addField("Description", event.getDescription(), false)
                         .addField("Time", event.getDateTime().format(Event.getDateTimeFormatter()) + " Pacific", false)
@@ -46,7 +46,7 @@ public class EventEmbedManager {
         e.getTextChannel().sendMessage(
                 new EmbedBuilder()
                         .setTitle("Joined event!")
-                        .setThumbnail("https://ffxiv.gamerescape.com/w/images/3/3c/061801.png")
+                        .setThumbnail("https://ffxiv.gamerescape.com/w/images/5/54/Main_Command_14_Icon.png")
                         .setDescription(e.getMember().getAsMention() + " joined "
                                 + event.getDescription() + "! (ID: " + event.getEventId() + ")\n\n")
                         .addField("Time", event.getDateTime().format(Event.getDateTimeFormatter()) + " Pacific", false)
@@ -65,7 +65,7 @@ public class EventEmbedManager {
         e.getTextChannel().sendMessage(
                 new EmbedBuilder()
                         .setTitle("Left event!")
-                        .setThumbnail("https://ffxiv.gamerescape.com/w/images/3/3c/061801.png")
+                        .setThumbnail("https://ffxiv.gamerescape.com/w/images/5/54/Main_Command_14_Icon.png")
                         .setDescription(e.getMember().getAsMention() + " left "
                                 + event.getDescription() + "! (ID: " + event.getEventId() + ")\n\n")
                         .addField("Description", event.getDescription(), false)
@@ -95,7 +95,8 @@ public class EventEmbedManager {
         }
 
         if (event == null) {
-            e.getTextChannel().sendMessage(e.getMember().getNickname() +
+            e.getTextChannel().sendMessage(e.getMember().getNickname().isEmpty() ?
+            		e.getMember().getEffectiveName() : e.getMember().getNickname() +
                     ", I couldn't find that event scheduled."
             ).queue();
             return;
@@ -103,14 +104,15 @@ public class EventEmbedManager {
 
         for (Member member : members) {
             sb.append(":small_blue_diamond: ")
-                    .append(member.getNickname())
+                    .append(member.getNickname().isEmpty() ?
+                    		member.getEffectiveName() : member.getNickname())
                     .append("\n");
         }
 
         e.getTextChannel().sendMessage(
                 new EmbedBuilder()
                         .setTitle("Event Information")
-                        .setThumbnail("https://ffxiv.gamerescape.com/w/images/3/3c/061801.png")
+                        .setThumbnail("https://ffxiv.gamerescape.com/w/images/5/54/Main_Command_14_Icon.png")
                         .addField("Description", event.getDescription(), false)
                         .addField("Time", event.getDateTime().format(Event.getDateTimeFormatter()) + " Pacific", false)
                         .addField("Current Members", sb.toString(), false)
@@ -140,7 +142,8 @@ public class EventEmbedManager {
 
         ch.sendMessage(
                 new EmbedBuilder()
-                        .setTitle(member.getNickname() + "'s Events")
+                        .setTitle(member.getNickname().isEmpty() ?
+                        		member.getEffectiveName() : member.getNickname() + "'s Events")
                         .setDescription(eventSB.toString())
                         .build()
         ).queue();
@@ -158,10 +161,10 @@ public class EventEmbedManager {
             ch.sendMessage(
                     new EmbedBuilder()
                             .setTitle("Event CANCELLED")
-                            .setThumbnail("https://ffxiv.gamerescape.com/w/images/3/31/061802.png")
+                            .setThumbnail("https://ffxiv.gamerescape.com/w/images/5/54/Main_Command_14_Icon.png")
                             .setDescription(
                                     member.getAsMention() + " has cancelled " +
-                                            "**" + event.getDescription() + "(" + event.getEventId() + ")**!"
+                                            "**" + event.getDescription() + " (" + event.getEventId() + ")**!"
                             )
                             .build()
             ).queue();
@@ -188,7 +191,8 @@ public class EventEmbedManager {
 
         for (Member m : members) {
             sb.append(":small_blue_diamond: ")
-                    .append(m.getNickname())
+                    .append(m.getNickname().isEmpty() ?
+                    		m.getEffectiveName() : m.getNickname())
                     .append("\n");
         }
 
@@ -197,11 +201,13 @@ public class EventEmbedManager {
         ch.sendMessage(
                 new EmbedBuilder()
                         .setTitle("Event soon")
-                        .setDescription("Hello, " + member.getNickname() + "!\n\n"
+                        .setDescription("Hello, " + (member.getNickname().isEmpty() ?
+                        		member.getEffectiveName() : member.getNickname()) + "!\n\n"
                                 + "Just reminding you that you're scheduled for the following event!")
                         .addField("Description", event.getDescription(), false)
                         .addField("Time", event.getDateTime().format(Event.getDateTimeFormatter()) + " Pacific", false)
-                        .addField("Creator", creator.getNickname(), false)
+                        .addField("Creator", creator.getNickname().isEmpty() ?
+                        		creator.getEffectiveName() : creator.getNickname(), false)
                         .addField("Current Members", sb.toString(), false)
                         .setFooter("Type " + Responder.getPrefix() + "joinevent " + event.getEventId() + " to join in!", null)
                         .setFooter("ID: " + event.getEventId(), null)

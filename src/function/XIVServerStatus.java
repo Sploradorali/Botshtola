@@ -98,10 +98,10 @@ public class XIVServerStatus {
             e.printStackTrace();
         }
 
-        if (status != 1) {
-            online.set(false);
-        } else {
+        if (status != 3) {
             online.set(true);
+        } else {
+            online.set(false);
         }
 
 

@@ -10,8 +10,6 @@ public class Event {
 
     public static List<Event> events = new ArrayList<>();
 
-    private boolean notified = false;
-
     private int eventId;
     private long creatorId;
     private String description;
@@ -44,13 +42,5 @@ public class Event {
 
     public ZonedDateTime getDateTime() {
         return dateTime;
-    }
-
-    public boolean isNotified() {
-        return notified;
-    }
-
-    public void setNotified(boolean notified) {
-        this.notified = notified;
     }
 }

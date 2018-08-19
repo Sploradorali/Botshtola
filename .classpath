@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/cdora/eclipse-workspace/Botshtola/lib/JDA-3.7.1_385-withDependencies.jar"/>
+	<classpathentry kind="lib" path="C:/Users/cdora/eclipse-workspace/Botshtola/lib/json-20140107.jar"/>
+	<classpathentry kind="lib" path="C:/Users/cdora/eclipse-workspace/Botshtola/lib/db-derby-10.14.2.0-bin"/>
+	<classpathentry kind="lib" path="C:/Users/cdora/eclipse-workspace/Botshtola/lib/db-derby-10.14.2.0-bin/lib/derby.jar"/>
+	<classpathentry kind="lib" path="C:/Users/cdora/eclipse-workspace/Botshtola/lib/db-derby-10.14.2.0-bin/lib/derbyclient.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
 import net.dv8tion.jda.core.entities.MessageChannel;
@@ -71,13 +72,15 @@ public class ResetMaintenanceTimer {
      */
     public static void notifyReset(Instant instant, MessageChannel ch) {
         LocalDateTime ldt = LocalDateTime.ofInstant(instant, ZoneId.of("America/Los_Angeles"));
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("America/Los_Angeles")).withNano(0);
 
-        if (LocalDateTime.now(ZoneId.of("America/Los_Angeles")).withNano(0).isEqual(ldt.plusDays(1))) {
+        if (now.isEqual(ldt.plusDays(1))) {
             ch.sendMessage("Reminder! Weekly reset is tomorrow night!").queue();
         }
 
-        if (LocalDateTime.now(ZoneId.of("America/Los_Angeles")).withNano(0).isEqual(ldt.plusHours(1))) {
+        if (now.isEqual(ldt.plusHours(1))) {
             ch.sendMessage("Reminder! Weekly reset is in an hour!").queue();
         }
+        
     }
 }

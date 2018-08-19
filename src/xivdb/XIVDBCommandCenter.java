@@ -15,6 +15,7 @@ import core.Responder;
 import database.DBInteraction;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.MessageChannel;
+import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 public class XIVDBCommandCenter {
@@ -135,27 +136,60 @@ public class XIVDBCommandCenter {
             int id = character.getInt("lodestone_id");
             String name = character.getString("name");
             String server = character.getString("server");
-            String title = character.getJSONObject("data").getString("title");
-            String gc = character.getJSONObject("data").getJSONObject("grand_company").getString("name");
+            String title = character.getJSONObject("data").isNull("title") ? 
+            		" " : 
+        			character.getJSONObject("data").getString("title");
+            String gc = character.getJSONObject("data").isNull("grand_company") ?
+            		" " :
+            		character.getJSONObject("data").getJSONObject("grand_company").getString("name");
             String icon = character.getJSONObject("data").getJSONObject("grand_company").getString("icon");
             String gender = character.getJSONObject("data").getString("gender");
             String race = character.getJSONObject("data").getString("race");
-            String clan = character.getJSONObject("data").getString("clan");
+            String clan = character.getJSONObject("data").isNull("clan") ?
+            		" " :
+            		character.getJSONObject("data").getString("clan");
             String image = character.getString("portrait");
             String url = "https://xivdb.com/character/" + id;
 
 
-            XIVDBEmbedManager.sendCharacterSearchEmbed(name, title, image, server,
-                    gc, race, clan, gender, url, icon, url, id, ch);
+            XIVDBEmbedManager.sendCharacterSearchEmbed(
+            		name, title, image, server, gc, 
+					race, clan, gender, url, icon, url, id, ch
+					);
+            
         } catch (IOException ex) {
             ex.printStackTrace();
         }
     }
+    
+    public static long getCharacterId(Member member, MessageChannel ch) {
+    	long characterId = 0;
+    	
+    	
+    	
+    	HttpURLConnection con = charSearch(
+    			String.valueOf(DBInteraction.getUserCharacter(member.getUser().getIdLong())), 
+    			ch
+    			);
+
+        if (con == null) return 0;
+
+        try (InputStream singleIn = con.getInputStream()) {
+            JSONTokener singleTokener = new JSONTokener(singleIn);
+            JSONObject character = new JSONObject(singleTokener);
+
+            characterId = character.getInt("lodestone_id");
+        } catch (IOException e) {
+			e.printStackTrace();
+		}
+        
+        return characterId;
+    }
 
     public static void getCharacterClasses(String query, MessageReceivedEvent ev) {
         if (query.isEmpty()) {
-            ev.getTextChannel().sendMessage("Please tell me what to look for!\n"
-                    + "```Example: " + Responder.getPrefix() + "classes CHARACTER_ID```")
+            ev.getTextChannel().sendMessage("I can't find anything for that person...\n"
+                    + "```Example: " + Responder.getPrefix() + "seejobs @Douran```")
                     .queue();
             return;
         } else if (query.equals("#me")) {

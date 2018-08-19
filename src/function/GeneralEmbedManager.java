@@ -49,7 +49,7 @@ public class GeneralEmbedManager {
                                         + ":book: **" + Responder.getPrefix() + "charof <@MENTION>**: Brings up the personal character info of the tagged user.\n"
                                         + ":book: **" + Responder.getPrefix() + "clearme**: Clears your character info.\n"
                                         + ":book: **" + Responder.getPrefix() + "seejobs <CHARACTER ID>**: Brings up the selected character's classes.\n"
-                                        + ":book: **" + Responder.getPrefix() + "myjobs**: Brings up your selected character's classes."
+                                        + ":book: **" + Responder.getPrefix() + "myjobs**: Brings up your selected character's classes.\n"
                                         + ":book: **" + Responder.getPrefix() + "item <KEYWORD(s) or ID>**: Searches for an item.\n"
                                         + ":book: **" + Responder.getPrefix() + "quest <KEYWORD(s) or ID>**: Search for a quest.\n"
                                         + ":book: **" + Responder.getPrefix() + "fate <KEYWORD(s) or ID>**: Search for a FATE.\n"
@@ -116,7 +116,8 @@ public class GeneralEmbedManager {
         ch.sendMessage(
                 new EmbedBuilder()
                         .setColor(Color.BLACK)
-                        .setTitle(member.getNickname() + "'s Jobs")
+                        .setTitle(member.getNickname().isEmpty() ?
+                        		member.getEffectiveName() : member.getNickname() + "'s Jobs")
                         .setDescription(sb.toString())
                         .setThumbnail(member.getUser().getAvatarUrl())
                         .build()

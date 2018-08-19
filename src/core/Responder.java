@@ -12,16 +12,19 @@ import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
+import net.dv8tion.jda.core.events.ReconnectedEvent;
+import net.dv8tion.jda.core.events.ResumedEvent;
 import net.dv8tion.jda.core.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import net.dv8tion.jda.core.managers.GuildController;
 import scheduler.EventEmbedManager;
 import scheduler.SchedulerCommandCenter;
+import threads.Clock;
 import xivdb.XIVDBCommandCenter;
 
 public class Responder extends ListenerAdapter {
-	private static String prefix = ">";
+	private static String prefix = "!";
 
     public static String getPrefix() {
         return prefix;
@@ -126,9 +129,15 @@ public class Responder extends ListenerAdapter {
 
                     case "seejobs":
                         if (hasParameters) {
+                        	if (message.getMentionedUsers().size() > 0) {
+                        		XIVDBCommandCenter.getCharacterClasses(
+                        				String.valueOf(XIVDBCommandCenter.getCharacterId(message.getMentionedMembers().get(0), ch)),
+                        				event
+                        				);
+                        	}
                             XIVDBCommandCenter.getCharacterClasses(rawMessage.substring(rawMessage.indexOf(" ") + 1), event);
                         } else {
-                            XIVDBCommandCenter.getCharacterClasses("", event);
+                            XIVDBCommandCenter.getCharacterClasses("#me", event);
                         }
                         break;
 
@@ -275,7 +284,8 @@ public class Responder extends ListenerAdapter {
                     default:
                         // Notifies user that they have entered an invalid command
                         ch.sendMessage("Sorry, "
-                                + member.getNickname()
+                                + (member.getNickname().isEmpty() ?
+                                		member.getEffectiveName() : member.getNickname())
                                 + ", I don't quite understand. "
                                 + "Try **" + prefix + "help** to find out ways in which I can serve you.")
                                 .queue();
@@ -305,5 +315,11 @@ public class Responder extends ListenerAdapter {
                     .queue();
             GeneralEmbedManager.sendWelcomeEmbed(objGuild.getSystemChannel(), objMember);
         }
+    }
+    
+    @Override
+    public void onResume(ResumedEvent event) {
+    	Main.buildThreads();
+    	System.out.println("Reconnected. Clock threads restarted.");
     }
 }

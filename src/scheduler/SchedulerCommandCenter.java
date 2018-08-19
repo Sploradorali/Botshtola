@@ -2,10 +2,13 @@ package scheduler;
 
 
 import database.DBInitialization;
+import function.GeneralEmbedManager;
 import core.Responder;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.MessageChannel;
+import net.dv8tion.jda.core.entities.PrivateChannel;
+import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 import java.sql.*;
@@ -30,12 +33,17 @@ public class SchedulerCommandCenter {
     }
 
     public static void createEvent(String args, MessageReceivedEvent mre) {
+    	
+    	boolean hasYear = true;
+    	
         if (args == null) {
             mre.getTextChannel().sendMessage(
-                    mre.getMember().getNickname() + ", I didn't quite get that.\n" +
+                    mre.getMember().getNickname().isEmpty() ?
+                    		mre.getMember().getEffectiveName() : mre.getMember().getNickname() + ", I didn't quite get that.\n" +
                             "```Format: " + Responder.getPrefix() + "newevent 'DESC' DATE(mm/dd/yyyy) TIME(hh:mmAM/PM)\n" +
                             "Example: " + Responder.getPrefix() + "newevent 'sastasha hm' 08/10/2018 11:30PM```"
             ).queue();
+            
             return;
         }
 
@@ -48,17 +56,28 @@ public class SchedulerCommandCenter {
 
             description = description.substring(0, description.indexOf("'"));
 
-            DateTimeFormatter formatDate = DateTimeFormatter.ofPattern("MM/dd/yyyy");
-            DateTimeFormatter formatTime = DateTimeFormatter.ofPattern("hh:mma");
+            DateTimeFormatter formatDate = DateTimeFormatter.ofPattern("M/d/yyyy");
+            DateTimeFormatter formatTime = DateTimeFormatter.ofPattern("h:mma");
 
+            if (dStr.matches("\\d{1,2}/\\d{1,2}")) {
+            	int year = LocalDate.now().getYear();
+            	System.out.println(year);
+            	dStr += "/" + year;
+            }
+            
             LocalDate d = LocalDate.parse(dStr, formatDate);
+            if (d.plusDays(1).isBefore(LocalDate.now())) {
+            	d = d.plusYears(1);
+            }
+            
             LocalTime t = LocalTime.parse(tStr, formatTime);
 
             pushEvent(description, d, t, mre);
 
         } catch (DateTimeParseException | StringIndexOutOfBoundsException ex) {
             mre.getTextChannel().sendMessage(
-                    mre.getMember().getNickname() + ", I didn't quite get that.\n" +
+                    mre.getMember().getNickname().isEmpty() ?
+                    		mre.getMember().getEffectiveName() : mre.getMember().getNickname() + ", I didn't quite get that.\n" +
                             "```Format: " + Responder.getPrefix() + "newevent 'DESC' DATE(mm/dd/yyyy) TIME(hh:mmAM/PM)\n" +
                             "Example: " + Responder.getPrefix() + "newevent 'sastasha hm' 08/10/2018 11:30PM```"
             ).queue();
@@ -105,6 +124,8 @@ public class SchedulerCommandCenter {
         } catch (SQLException | ClassNotFoundException e) {
             e.printStackTrace();
         }
+
+        populateEvents();
     }
 
     /**
@@ -176,9 +197,11 @@ public class SchedulerCommandCenter {
             }
 
             EventEmbedManager.sendEventCancelledEmbed(ev, member, mre.getTextChannel());
+
         } else {
             mre.getTextChannel().sendMessage(
-                    mre.getMember().getNickname() + ", you can only cancel your own events... " +
+                    mre.getMember().getNickname().isEmpty() ?
+                    		mre.getMember().getEffectiveName() : mre.getMember().getNickname() + ", you can only cancel your own events... " +
                             "A little pretentious, don't you think?"
             ).queue();
         }
@@ -203,9 +226,12 @@ public class SchedulerCommandCenter {
             deleteUserEventStmt = con.prepareStatement(deleteUserEvent);
             deleteUserEventStmt.setInt(1, eventId);
             deleteUserEventStmt.executeUpdate();
+            System.out.println("Deleted event " + eventId);
         } catch (SQLException | ClassNotFoundException e) {
             e.printStackTrace();
         }
+        
+        populateEvents();
     }
 
     /**
@@ -215,29 +241,24 @@ public class SchedulerCommandCenter {
      * @param eventId
      */
     public static void joinUserEvent(Member member, int eventId, MessageReceivedEvent mre) {
-        String insert = "insert into userevents values (?, ?)";
-        PreparedStatement insertStmt = null;
-
         Event newEvent = null;
+        
         /* Create entry into userevents table */
         try (Connection con = DBInitialization.getConnection()) {
-            insertStmt = con.prepareStatement(insert, Statement.RETURN_GENERATED_KEYS);
-            insertStmt.setLong(1, member.getUser().getIdLong());
-            insertStmt.setInt(2, eventId);
-            insertStmt.executeUpdate();
-
-            ResultSet rs = insertStmt.getGeneratedKeys();
-
-            newEvent = pullEvent(rs.getInt(1));
+        	
+            newEvent = pullEvent(joinUserEvent(member, eventId));
+            
+            if (newEvent != null) {
+                EventEmbedManager.sendJoinEventEmbed(newEvent, mre);
+            }
+            
         } catch (DerbySQLIntegrityConstraintViolationException dup) {
             mre.getTextChannel()
-                    .sendMessage(member.getNickname() + ", you're already scheduled for that!")
+                    .sendMessage(member.getNickname().isEmpty() ?
+                    		mre.getMember().getEffectiveName() : mre.getMember().getNickname() + ", you're already scheduled for that!")
                     .queue();
         } catch (SQLException | ClassNotFoundException e) {
             e.printStackTrace();
-        }
-        if (newEvent != null) {
-            EventEmbedManager.sendJoinEventEmbed(newEvent, mre);
         }
     }
 
@@ -247,29 +268,38 @@ public class SchedulerCommandCenter {
      * @param member
      * @param eventId
      */
-    public static void joinUserEvent(Member member, int eventId) {
-        String insert = "insert into userevents values (?, ?)";
+    public static int joinUserEvent(Member member, int eventId) throws SQLException {
+        String insert = "insert into userevents values (?, ?, ?)";
         PreparedStatement insertStmt = null;
+        ResultSet rs = null;
 
         /* Create entry into userevents table */
         try (Connection con = DBInitialization.getConnection()) {
-            insertStmt = con.prepareStatement(insert);
+        	insertStmt = con.prepareStatement(insert, Statement.RETURN_GENERATED_KEYS);
             insertStmt.setLong(1, member.getUser().getIdLong());
             insertStmt.setInt(2, eventId);
+            insertStmt.setBoolean(3, false);
             insertStmt.executeUpdate();
+
+            rs = insertStmt.getGeneratedKeys();
+
+            return rs.next() ? rs.getInt(1) : 0;
         } catch (SQLException | ClassNotFoundException e) {
             e.printStackTrace();
         }
+        return 0;
     }
 
     /**
-     * Deletes a record from the userevent table
+     * Deletes a record from the userevent table. If the record refers to the creator
+     * of the event, passCreator is called. If the creator role is passed successfully,
+     * the member is removed from the event;
      *
      * @param member
      * @param eventId
      */
     public static void leaveUserEvent(Member member, int eventId, MessageReceivedEvent mre) {
-        String delete = "delete from userevents where memberid = ?, eventid = ?";
+        String delete = "delete from userevents where userid = ? and eventid = ?";
         PreparedStatement deleteStmt = null;
         Event event = null;
 
@@ -280,6 +310,8 @@ public class SchedulerCommandCenter {
             }
         }
 
+        if (event.getCreatorId() == member.getUser().getIdLong() && !passCreator(event, mre)) return;
+        
         /* Create entry into userevents table */
         try (Connection con = DBInitialization.getConnection()) {
             deleteStmt = con.prepareStatement(delete);
@@ -289,8 +321,55 @@ public class SchedulerCommandCenter {
         } catch (SQLException | ClassNotFoundException e) {
             e.printStackTrace();
         }
-
+        
         EventEmbedManager.sendLeaveEventEmbed(event, mre);
+    }
+    
+    /**
+     * Checks if the event has more than one member. If so, the creator role is
+     * passed onto the next member. If not, the event is cancelled.
+     * 
+     * @param event
+     * @param mre
+     */
+    public static boolean passCreator(Event event, MessageReceivedEvent mre) {
+    	boolean passedToNewCreator = false;
+    	
+    	String select = "select userid from userevents where eventid = ?";
+    	PreparedStatement statement = null;
+    	ResultSet rs;
+    	
+    	try (Connection con = DBInitialization.getConnection()) {
+    		statement = con.prepareStatement(select);
+    		statement.setInt(1, event.getEventId());
+    		rs = statement.executeQuery();
+    		
+    		if (rs.next()) {
+    			long newCreator = rs.getLong("userid");
+    			if (newCreator != event.getCreatorId()) {
+    				String update = "update events set creatorid = ? where eventid = ?";
+    				statement = con.prepareStatement(update);
+    				statement.setLong(1, newCreator);
+    				statement.setInt(2, event.getEventId());
+    				mre.getTextChannel().sendMessage(
+    						mre.getGuild().getMemberById(newCreator) 
+	    						+ " is now the party leader of " 
+								+ event.getDescription() 
+	    						+ " (" + event.getEventId() + ")!"
+    						).queue();
+    				passedToNewCreator = true;
+    			} else {
+    				cancelEvent(mre.getMember(), event.getEventId(), mre);
+    			}
+    		} else {
+				cancelEvent(mre.getMember(), event.getEventId(), mre);
+    		}
+    		
+    	} catch (ClassNotFoundException | SQLException e) {
+			e.printStackTrace();
+		}
+    	
+    	return passedToNewCreator;    	
     }
 
     /**
@@ -394,6 +473,8 @@ public class SchedulerCommandCenter {
                 builder.dateTime(eventDateTime);
                 newList.add(builder.build());
             }
+            
+            System.out.println("Event list updated.");
         } catch (SQLException | ClassNotFoundException e) {
             e.printStackTrace();
         }
@@ -402,37 +483,71 @@ public class SchedulerCommandCenter {
     }
 
     /**
-     * Notifies the members attending an event through private message
+     * Notifies the members attending an event through private message, then sets
+     * notified field to true
      *
      * @param event
      * @param guild
      */
     public static void notifyEventMembers(Event event, Guild guild) {
-        List<Member> members = getEventUsers(event.getEventId(), guild);
-        for (Member member : members)
-            member.getUser().openPrivateChannel().queue(channel -> EventEmbedManager.sendNotificationEmbed(
-                    event,
-                    member,
-                    guild,
-                    channel
-            ));
+    	
+    	String selectMembers = "select * from userevents where eventid = ? and notified = false";
+    	PreparedStatement statement = null;
+    	ResultSet rs = null;
+    	
+    	try (Connection con = DBInitialization.getConnection()) {
+    		statement = con.prepareStatement(selectMembers);
+    		statement.setInt(1, event.getEventId());
+    		rs = statement.executeQuery();
+    		
+    		while (rs.next()) {
+    			long userId = rs.getLong("userid");
+    			
+    			Member member = guild.getMemberById(userId);
+    			
+    			System.out.println(userId);
+    			System.out.println(rs.getBoolean("notified"));
+    			member.getUser()
+    				.openPrivateChannel()
+    				.queue((channel) -> 
+    					EventEmbedManager.sendNotificationEmbed(event, member, guild, channel)
+    					);
+    			
+    			String updateMembers = "update userevents set notified = true where eventid = ? and userid = ?";
+    			statement = con.prepareStatement(updateMembers);
+    			statement.setInt(1, event.getEventId());
+    			statement.setLong(2, userId);
+    			statement.executeUpdate();
+    			
+    		}
+    	} catch (ClassNotFoundException | SQLException e) {
+			e.printStackTrace();
+		}
     }
 
     /**
-     * Checks event time against current time to flag for member notifciation
+     * Checks event time against current time to flag for member notification and deletes
+     * events more than 30 minutes past event time
      *
      * @param event
      * @param guild
      */
-    public static void checkToNotify(Event event, Guild guild) {
-        if (!event.isNotified()) {
-            Instant eventTime = event.getDateTime().toInstant();
-            if (eventTime.minusMillis(1800000).isBefore(Instant.now())
-                    && eventTime.isAfter(Instant.now())) {
-                notifyEventMembers(event, guild);
-                event.setNotified(true);
-            }
-        }
+    public static void checkEvent(Event event, Guild guild) {
+    	
+    	Instant eventTimeAsInstant = event.getDateTime().toInstant();
+    	long eventTimeMillis = eventTimeAsInstant.toEpochMilli();
+    	
+    	long nowMillis = Instant.now().toEpochMilli();
+
+    	if ((eventTimeMillis + 1800000L) <= nowMillis) {
+    		cancelEvent(event.getEventId());
+    		populateEvents();
+    	}
+    	
+    	if ((eventTimeMillis - 1800000L) <= nowMillis && eventTimeMillis > nowMillis) {
+    		notifyEventMembers(event, guild);
+    	}
+        
     }
 
     /**

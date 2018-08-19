@@ -35,7 +35,7 @@ public class XIVDBEmbedManager {
                                                    MessageChannel channel) {
         channel.sendMessage(
                 new EmbedBuilder()
-                        .setTitle(name + " | " + title)
+                        .setTitle(title.equals(" ") ? name : name + " | " + title)
                         .setColor(Color.LIGHT_GRAY)
                         .setThumbnail(icon)
                         .setImage(image)
