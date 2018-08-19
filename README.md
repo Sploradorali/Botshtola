@@ -10,6 +10,7 @@ Because of this, for anyone looking for a full-featured FFXIV utility bot, there
 <h2>August 19, 2018 FIXES - Y'shtola (1.2.1)</h2>
 
 <h3>Hotfixes and Feature Changes/Additions</h3>
+
 * Fixed several urgent issues with time-based threads that caused unstable behavior or complete inoperability of scheduler features, server status 
 checks, and more.
 * Expanded the criteria of accepted inputs for <i>newevent</i> date and time inputs. Explicit parameters (i.e. 08/20/2018 11:30PM) can be 
