@@ -7,7 +7,27 @@ Some functionality will not work without extra DIY. For example, the instance of
 a JavaDB/Apache Derby embedded database, which is not included in the repository. A configuration (config.txt) is also required. 
 Because of this, for anyone looking for a full-featured FFXIV utility bot, there are many great public bots out there!
 
-<h2> August 15, 2018 UPDATE - Y’shtola (1.2.0)</h2>
+<h2>August 19, 2018 FIXES - Y'shtola (1.2.1)</h2>
+
+<h3>Hotfixes and Feature Changes/Additions</h3>
+* Fixed several urgent issues with time-based threads that caused unstable behavior or complete inoperability of scheduler features, server status 
+checks, and more.
+* Expanded the criteria of accepted inputs for <i>newevent</i> date and time inputs. Explicit parameters (i.e. 08/20/2018 11:30PM) can be 
+replaced by more lax formatting in most cases (i.e 8/20 11:30pm). For example, skipping the year will default the given month and date to the 
+next year they'll come around. For example, if you input "8/15" when the current date is 8/10/18, Y'shtola will set the year to 2018 by default.
+* Fixed an issue in which character information Embeds were failing to generate when a null existed on a Lodestone profile. For example, the 
+<i>char</i> function would fail to output if the character had no title equipped. Embeds should now generate properly despite the lack of a title or 
+Grand Company.
+* Some functions that used a member's server nickname produced awkward output messages ("null set their character!") or no messages at all if the 
+user has not set a nickname yet. Now, if a user without a nickname uses these functions, their effective global username is used instead.
+* Extra steps are taken to lighten the database load. Events now are removed from the database 30 minutes after their scheduled start time. Additionally, 
+if the creator of the event leaves with members still attached to the event, the role of "creator" passes on to the next member until there are no longer 
+any members left in the roster, in which case the event is fully cancelled.
+* <i>seejobs</i> now accepts a user mention (@USER) and, if set, will use the character mapped to them in the database.
+* Other small text-based fixes, such as missing response messages.
+<br>
+
+<h2>August 15, 2018 UPDATE - Y’shtola (1.2.0)</h2>
 
 <h3>Summary</h3>
 
