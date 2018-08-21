@@ -61,7 +61,6 @@ public class SchedulerCommandCenter {
 
             if (dStr.matches("\\d{1,2}/\\d{1,2}")) {
             	int year = LocalDate.now().getYear();
-            	System.out.println(year);
             	dStr += "/" + year;
             }
             
@@ -79,7 +78,7 @@ public class SchedulerCommandCenter {
                     mre.getMember().getNickname().isEmpty() ?
                     		mre.getMember().getEffectiveName() : mre.getMember().getNickname() + ", I didn't quite get that.\n" +
                             "```Format: " + Responder.getPrefix() + "newevent 'DESC' DATE(mm/dd/yyyy) TIME(hh:mmAM/PM)\n" +
-                            "Example: " + Responder.getPrefix() + "newevent 'sastasha hm' 08/10/2018 11:30PM```"
+                            "Example: " + Responder.getPrefix() + "newevent 'sastasha hm' 8/10/2018 11:30PM```"
             ).queue();
         }
 
@@ -181,7 +180,7 @@ public class SchedulerCommandCenter {
         PreparedStatement deleteUserEventStmt = null;
 
         Event ev = pullEvent(eventId);
-
+        
         if (mre.getAuthor().getIdLong() == ev.getCreatorId()) {
 
             try (Connection con = DBInitialization.getConnection()) {
@@ -195,9 +194,11 @@ public class SchedulerCommandCenter {
             } catch (SQLException | ClassNotFoundException e) {
                 e.printStackTrace();
             }
-
+            
+            populateEvents();
+            
             EventEmbedManager.sendEventCancelledEmbed(ev, member, mre.getTextChannel());
-
+        	
         } else {
             mre.getTextChannel().sendMessage(
                     mre.getMember().getNickname().isEmpty() ?
@@ -246,7 +247,7 @@ public class SchedulerCommandCenter {
         /* Create entry into userevents table */
         try (Connection con = DBInitialization.getConnection()) {
         	
-            newEvent = pullEvent(joinUserEvent(member, eventId));
+            newEvent = pullEvent(eventId);
             
             if (newEvent != null) {
                 EventEmbedManager.sendJoinEventEmbed(newEvent, mre);
@@ -283,7 +284,7 @@ public class SchedulerCommandCenter {
 
             rs = insertStmt.getGeneratedKeys();
 
-            return rs.next() ? rs.getInt(1) : 0;
+            return rs.next() ? rs.getInt("eventid") : 0;
         } catch (SQLException | ClassNotFoundException e) {
             e.printStackTrace();
         }

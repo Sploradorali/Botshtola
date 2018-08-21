@@ -16,6 +16,10 @@ import net.dv8tion.jda.core.entities.MessageChannel;
 
 public class XIVServerStatus {
 	
+
+    public static AtomicBoolean online = new AtomicBoolean(true);
+    public static AtomicBoolean previouslyOnline = new AtomicBoolean(true);
+	
 	//http://frontier.ffxiv.com/worldStatus/current_status.json?
 
     /**
@@ -88,8 +92,6 @@ public class XIVServerStatus {
      * @param ch
      */
     public static void query(String serverName, MessageChannel ch) {
-        AtomicBoolean online = new AtomicBoolean(true);
-        AtomicBoolean previouslyOnline = new AtomicBoolean(true);
 
         int status = 1;
         try {

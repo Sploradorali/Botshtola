@@ -2,11 +2,13 @@ package core;
 
 import java.util.List;
 
+import function.AdminCommandCenter;
 import function.GeneralCommandCenter;
 import function.GeneralEmbedManager;
 import function.ResetMaintenanceTimer;
 import function.RoleCommandCenter;
 import function.XIVServerStatus;
+import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Message;
@@ -38,6 +40,7 @@ public class Responder extends ListenerAdapter {
         User user = event.getAuthor();
         Member member = event.getMember();
         TextChannel ch = event.getTextChannel();
+        boolean isAdmin = false;
 
         if (!user.isBot()) {
             if (rawMessage.startsWith(Responder.getPrefix())) {
@@ -52,6 +55,9 @@ public class Responder extends ListenerAdapter {
                 } else {
                     base = rawMessage.substring(1);
                 }
+                
+                if (member.getPermissions().contains(Permission.ADMINISTRATOR))
+                	isAdmin = true;
 
                 /* COMMAND SELECTOR */
                 switch (base) {
@@ -278,6 +284,11 @@ public class Responder extends ListenerAdapter {
                         break;
 
                     /* Administrator-only commands */
+                    case "playdead":
+                    	if (isAdmin) {
+                    		AdminCommandCenter.playDead();
+                    	}
+                        
                     //TESTING
 
                     /* Invalid command */
